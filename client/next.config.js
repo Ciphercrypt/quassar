@@ -1,6 +1,21 @@
+/** @type {import('next').NextConfig} */
 module.exports = {
+  reactStrictMode: true,
   images: {
-    domains: ['nextjs-clone-youtube-prod.s3.amazonaws.com'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    domains: ["upcdn.io", "replicate.delivery", "lh3.googleusercontent.com"],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/github",
+        destination: "https://github.com/Nutlope/roomGPT",
+        permanent: false,
+      },
+      {
+        source: "/deploy",
+        destination: "https://vercel.com/templates/next.js/room-GPT",
+        permanent: false,
+      },
+    ];
   },
 };
