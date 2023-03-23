@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
-import DadarMap from './screens/Traffic/realTimeMonitoring';
+import VehicleTracking from './screens/Tracking/Vehicletracking';
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-            <DadarMap />
+            <VehicleTracking />
        
       </header>
     </div>

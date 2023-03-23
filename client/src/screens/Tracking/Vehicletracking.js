@@ -4,15 +4,16 @@ import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
 
 const iconPerson = new L.Icon({
-  iconUrl: require('./images/camera_icon.svg').default,
-  iconRetinaUrl: require('./images/camera_icon.svg').default,
-  iconSize: new L.Point(35, 35),
+  iconUrl: require('./images/location-arrow.svg').default,
+  iconRetinaUrl: require('./images/location-arrow.svg').default,
+  iconSize: new L.Point(25, 25),
   className: 'leaflet-div-icon'
 });
 
-const DadarMap = () => {
+const VehicleTracking = () => {
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
+
 
   const roadData = [
     [[19.02072745616729, 72.84339789621288], [19.01784408492782, 72.84777341516289]],
@@ -49,6 +50,9 @@ const DadarMap = () => {
 
 
       {roadData.map((coordinates, index) => (
+
+<>
+
         <Polyline
          
           positions={coordinates}
@@ -56,6 +60,16 @@ const DadarMap = () => {
           weight={10}
         />
 
+        <Marker position={coordinates[0]} icon={iconPerson} >
+        <Popup>
+          <div>
+            <h3>data regarding time etc</h3>
+            <p>Insert data here</p>
+          </div>
+        </Popup>
+      </Marker>
+        
+      </>
         ))}
     
 
@@ -63,4 +77,4 @@ const DadarMap = () => {
   );
 };
 
-export default DadarMap;
+export default VehicleTracking;
