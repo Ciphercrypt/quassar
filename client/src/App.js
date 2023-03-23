@@ -1,24 +1,15 @@
-import 'tailwindcss/dist/base.css';
-import 'styles/globalStyles.css';
-import React from 'react';
-import { css } from 'styled-components/macro'; //eslint-disable-line
-
-import Videos from 'screens/Traffic/videos.js';
-import Home from 'Home.js';
-
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-
-export default function App() {
+import logo from './logo.svg';
+import './App.css';
+import DadarMap from './screens/Traffic/realTimeMonitoring';
+function App() {
   return (
-    <Router>
-      <Switch>
-        <Route exact path="/">
-          <Home />
-        </Route>
-        <Route exact path="/traffic/videos">
-          <Videos />
-        </Route>
-      </Switch>
-    </Router>
+    <div className="App">
+      <header className="App-header">
+            <DadarMap />
+       
+      </header>
+    </div>
   );
 }
+
+export default App;
