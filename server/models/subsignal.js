@@ -15,6 +15,9 @@ const subsignalSchema = new mongoose.Schema({
    
     required: true,
   },
+  previousSubSignal: {
+    type:String,
+  },
 });
 
 module.exports = mongoose.model('SubSignal', subsignalSchema);
