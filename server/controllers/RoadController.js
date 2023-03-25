@@ -1,15 +1,29 @@
-const Road = require('../models/road');
+const Road = require("../models/road");
 
 // Create a new road
 const createRoad = async (req, res) => {
   try {
-    const { id, startingCoordinates, endingCoordinates, coordinates } = req.body;
-    const newRoad = new Road({ id, startingCoordinates, endingCoordinates, coordinates });
+    const {
+      id,
+      startingCoordinates,
+      startingSignalID,
+      endingSignalID,
+      endingCoordinates,
+      coordinates,
+    } = req.body;
+    const newRoad = new Road({
+      id,
+      startingSignalID,
+      endingSignalID,
+      startingCoordinates,
+      endingCoordinates,
+      coordinates,
+    });
     await newRoad.save();
     res.status(201).json(newRoad);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Unable to create road.' });
+    res.status(500).json({ message: "Unable to create road." });
   }
 };
 
@@ -26,7 +40,7 @@ const editRoad = async (req, res) => {
     res.status(200).json(updatedRoad);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Unable to edit road.' });
+    res.status(500).json({ message: "Unable to edit road." });
   }
 };
 
@@ -38,14 +52,13 @@ const fetchRoad = async (req, res) => {
     if (road) {
       res.status(200).json(road);
     } else {
-      res.status(404).json({ message: 'Road not found.' });
+      res.status(404).json({ message: "Road not found." });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Unable to fetch road.' });
+    res.status(500).json({ message: "Unable to fetch road." });
   }
 };
-
 
 // Delete a road by its ID
 const deleteRoad = async (req, res) => {
@@ -55,11 +68,11 @@ const deleteRoad = async (req, res) => {
     if (deletedRoad) {
       res.status(200).json(deletedRoad);
     } else {
-      res.status(404).json({ message: 'Road not found.' });
+      res.status(404).json({ message: "Road not found." });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Unable to delete road.' });
+    res.status(500).json({ message: "Unable to delete road." });
   }
 };
 
