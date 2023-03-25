@@ -323,11 +323,15 @@ async function getScoresForSignal(signalID) {
 
 
 //get roadcoordinates by endingPoint
-async function getRoadCoordinatesByEndingPoint(endingPoint) {
-  const roadCoordinates = await Road.find({
-    endingCoordinates: endingPoint,
-  });
-  return roadCoordinates.coordinates;
+async function getRoadCoordinatesByEndingPoint(lat,lang) {
+  const endingPoint=[lat,lang];
+   // const { endingPoint } = req.query;
+    const road = await Road.findOne({ endingCoordinates: endingPoint });
+
+    if(road)
+    return road.coordinates;
+    else
+    return [];
 }
 
 
@@ -413,7 +417,7 @@ const getTrafficDataOfAllSignals = async (req, res) => {
 
 
         //const vehicleCount = await getVehicleCountForSignal(signal.ID);
-        const RoadCoordinates = await getRoadCoordinatesByEndingPoint(signal.coordinates);
+        const RoadCoordinates = await getRoadCoordinatesByEndingPoint(signal.coordinates[0],signal.coordinates[1]);
         const signalData = {
           signalId: signal.ID,
           vehicleCount: count,
