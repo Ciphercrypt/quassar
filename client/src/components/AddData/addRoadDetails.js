@@ -1,4 +1,5 @@
-import * as React from 'react';
+import { React} from 'react';
+import {useState,useEffect} from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Input from '@mui/material/Input';
@@ -12,8 +13,9 @@ import TextField from '@mui/material/TextField';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-export default function addRoadDetails() {
-  const [showPassword, setShowPassword] = React.useState(false);
+export default function AddRoadDetails() {
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -170,3 +172,4 @@ export default function addRoadDetails() {
     </Box>
   );
 }
+
