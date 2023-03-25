@@ -1,4 +1,4 @@
-import React from "react";
+import { React, useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -9,6 +9,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Typography from "@mui/material/Typography";
+import axios from "axios";
 
 const iconPerson = new L.Icon({
   iconUrl: require("./images/camera_icon.svg").default,
@@ -18,30 +19,33 @@ const iconPerson = new L.Icon({
 });
 
 const DadarMap = () => {
-
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
-
+  const [signalData, setSignalData] = useState("");
+  const [RoadData, setRoadData] = useState("");
 
   const fetchSignalData = async () => {
-    const response = await axios.get('http://localhost:5000/api/signal/getAllSignals');
+    const response = await axios.get(
+      "http://localhost:5000/api/signal/getAllSignals"
+    );
     setSignalData(response.data);
   };
 
   const fetchTrafficData = async (signalId) => {
-
-
-    const response = axios.get('http://localhost:5000/api/scheduling/getTrafficDataOfSignal', {
-      params: {
-        signalId: {signalId} ,
-      
+    const response = axios.get(
+      "http://localhost:5000/api/scheduling/getTrafficDataOfSignal",
+      {
+        params: {
+          signalId: { signalId },
+        },
       }
-    })
-    
- 
+    );
+  };
 
   const fetchRoadData = async (endPoint) => {
-    const response = await axios.get(`http://localhost:8080/api/road/fetchRoadByEndingPoint?endPoint=${endPoint}`);
+    const response = await axios.get(
+      `http://localhost:8080/api/road/fetchRoadByEndingPoint?endPoint=${endPoint}`
+    );
     return response.data.coordinates;
   };
 
@@ -49,15 +53,16 @@ const DadarMap = () => {
     fetchSignalData();
   }, []);
 
-
-  
   useEffect(() => {
     const roadCoordinates = [];
     const fetchRoadDataForSignals = async () => {
       for (const signal of signalData) {
         const trafficData = await fetchTrafficData(signal.id);
         const roadCoordinates = await fetchRoadData(signal.roadEndingPoint);
-        setRoadData((prevData) => [...prevData, { coordinates: roadCoordinates, trafficData: trafficData }]);
+        setRoadData((prevData) => [
+          ...prevData,
+          { coordinates: roadCoordinates, trafficData: trafficData },
+        ]);
       }
     };
     fetchRoadDataForSignals();
@@ -68,12 +73,10 @@ const DadarMap = () => {
     const maxVehiclesCount = 100; // maximum value for vehicle count
     const sectors = 4; // number of color sectors
     const range = (maxVehiclesCount - minVehiclesCount) / sectors;
-    const colors = ['green', 'yellow', 'orange', 'red'];
+    const colors = ["green", "yellow", "orange", "red"];
     const sectorIndex = Math.floor((trafficData - minVehiclesCount) / range);
     return colors[sectorIndex];
   };
-
-
 
   const roadData = [
     [

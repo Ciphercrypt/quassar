@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -8,6 +8,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import axios from "axios";
 
 const iconPerson = new L.Icon({
   iconUrl: require("./images/location-arrow.svg").default,
@@ -19,29 +20,31 @@ const iconPerson = new L.Icon({
 const VehicleTracking = () => {
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
+  const [roadData, setRoadData] = useState([
+    [
+      [19.017848155836916, 72.84769723673634],
+      [19.01564679977552, 72.85137625913586],
+    ],
+  ]);
 
-  const roadData = [
-    [
-      [19.02072745616729, 72.84339789621288],
-      [19.01784408492782, 72.84777341516289],
-    ],
-    [
-      [19.01784408492782, 72.84777341516289],
-      [19.01551769208689, 72.85141246081042],
-    ],
-    [
-      [19.01551769208689, 72.85141246081042],
-      [19.014852786064026, 72.85060047767622],
-    ],
-    [
-      [19.014852786064026, 72.85060047767622],
-      [19.012717537685944, 72.84925574782181],
-    ],
-    [
-      [19.012717537685944, 72.84925574782181],
-      [19.011329130786255, 72.85434485740484],
-    ],
-  ];
+  useEffect(() => {
+    axios
+      .post("http://localhost:5000/api/vehicletrack/getVehicleTrackLocation", {
+        vehicleID: "MH 01 CB 1111",
+      })
+      .then(function (response) {
+        // handle success
+        // console.log(response.data);
+        setRoadData(response.data);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .finally(function () {
+        // always executed
+      });
+  }, []);
   const roadCoordinates = [
     [19.017714459676327, 72.84761331851789],
     [19.025, 72.836],

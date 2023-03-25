@@ -84,15 +84,18 @@ const fetchRoadByEndingPoint = async (req, res) => {
     if (road) {
       res.status(200).json(road);
     } else {
-      res.status(404).json({ message: 'Road not found.' });
+      res.status(404).json({ message: "Road not found." });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Unable to fetch road.' });
+    res.status(500).json({ message: "Unable to fetch road." });
   }
 };
 
-
-module.exports = { createRoad, editRoad, fetchRoad, deleteRoad ,getTrafficDataOfSignal};
-
-
+module.exports = {
+  createRoad,
+  editRoad,
+  fetchRoad,
+  deleteRoad,
+  fetchRoadByEndingPoint,
+};
