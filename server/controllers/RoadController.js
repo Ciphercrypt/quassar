@@ -79,13 +79,17 @@ const deleteRoad = async (req, res) => {
 // Fetch a road by its ending point
 const fetchRoadByEndingPoint = async (req, res) => {
   try {
-    const { endingPoint } = req.params;
+
+    console.log(req.query);
+    const endingPoint=[req.query.lat,req.query.lang];
+   // const { endingPoint } = req.query;
     const road = await Road.findOne({ endingCoordinates: endingPoint });
     if (road) {
       res.status(200).json(road);
     } else {
       res.status(404).json({ message: "Road not found." });
     }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Unable to fetch road." });

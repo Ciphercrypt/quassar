@@ -50,9 +50,10 @@ const DadarMap = () => {
 
   const fetchRoadData = async (endPoint) => {
     const response = await axios.get(
-      `http://localhost:8080/api/road/fetchRoadByEndingPoint`,
-      { params: { endingPoint: endPoint } }
+      `http://localhost:5000/api/road/getRoadByEndingPoint`,
+      { params: { lat: endPoint[0],lang:endPoint[1] } }
     );
+    
     return response.data.coordinates;
   };
 
@@ -66,7 +67,7 @@ const DadarMap = () => {
     console.log("coordinates" + coordinates);
     return coordinates;
   };
-  useEffect(() => {
+  
     // const dt=  fetchSignalData().then((data)=>{
     //    console.log(data.signal);
     //    return data.signal;
@@ -76,29 +77,35 @@ const DadarMap = () => {
 
     const getData = async () => {
       const dt = await fetchSignalData();
+
       console.log("this is dt : ", dt);
-      dt.map((data, index) => {
+      dt.forEach(async (data, index)  => {
+        console.log("data="+JSON.stringify(data));
         // console.log("Inside map");
         // Perform your operations on each element of the array here
-        let vC = vehicleCount(data.ID);
+        let vC = await vehicleCount(data.ID);
+        let rc =await roadCoordinatesFetcher(data.coordinates);
+        console.log("rc: ", rc);
         setRoadData([
           ...RoadData,
           {
             signalID: data.ID,
             signalCoordinates: data.coordinates,
-            roadcoordinates: roadCoordinatesFetcher(data.coordinates),
+            roadcoordinates: rc,
             trafficData: vC,
             color: getRoadColor(vC),
             location: data.location,
           },
         ]);
 
-        console.log(RoadData);
+        console.log("RoadData="+index+" =>  " +JSON.stringify(RoadData));
       });
     };
 
+   useEffect(()=>{
     getData();
-  }, []);
+       
+   },[]);
   // useEffect(() => {
 
   //   const  getAllData = () => {
@@ -169,8 +176,11 @@ const DadarMap = () => {
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
 
-        {/* {RoadData.map((data, index) => (
-  <Marker key={index} position={data.signalCoordinates}>
+         {RoadData.map((data, index) => {
+          
+            console.log("chahat="+JSON.stringify(data));
+          
+return <Marker key={index} position={data.signalCoordinates} icon={iconPerson}>
     <Popup>
       <div>
         <h3>{`Signal ID: ${data.signalID}`}</h3>
@@ -178,17 +188,19 @@ const DadarMap = () => {
         <p>{`Vehicle Count: ${data.trafficData}`}</p>
       </div>
     </Popup>
-    {data.roadCoordinates.map((coordinates, index) => (
+
+    
+    {/* {data.roadcoordinates.map((coordinates, index) => (
       <Polyline
         key={index}
         positions={coordinates}
         color={data.color}
         weight={10}
       />
-    ))}
+    ))} */}
   </Marker>
-))} */}
-
+})} 
+{/* 
         <Marker position={markerPosition} icon={iconPerson}>
           <Popup>
             <div>
@@ -196,15 +208,15 @@ const DadarMap = () => {
               <p>Insert data here</p>
             </div>
           </Popup>
-        </Marker>
+        </Marker> */}
 
-        {roadData.map((coordinates, index) => (
+        {/* {roadData.map((coordinates, index) => (
           <Polyline
             positions={coordinates}
             color={getRoadColor(coordinates)}
             weight={10}
           />
-        ))}
+        ))} */}
       </MapContainer>
     </>
   );
