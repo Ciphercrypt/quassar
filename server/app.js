@@ -14,7 +14,7 @@ const {VehicleCountRoutes}=require('./routes/VehicleCountRoutes');
 const {SignalRoutes}=require('./routes/SignalRoutes');
 const {SubsignalRoutes}=require('./routes/SubsignalRoutes');
 const {VehicleTrackRoutes}=require('./routes/VehicleTrackRoutes');
-
+const {SchedulingRoutes}=require('./routes/SchedulingRoutes');
 
 var jsonParser = bodyParser.json();
 var urlEncoded = bodyParser.urlencoded({ extended: true });

@@ -11,13 +11,12 @@
 
 
 
-const mongoose = require('mongoose');
-const Signal = require('./models/Signal');
-const Subsignal = require('./models/Subsignal');
-const CCTVCamera = require('./models/CCTVCamera');
-const Signaldistance = require('./models/Signaldistance');
-const VehicleCount = require('./models/VehicleCount');
-const Road = require('./models/Road');
+const Signal = require('../models/signal');
+const Subsignal = require('../models/subsignal');
+const CCTVCamera = require('../models/cctv');
+const Signaldistance = require('../models/signaldistances');
+const VehicleCount = require('../models/vehiclecount');
+const Road = require('../models/road');
 
 
 async function getAllSignals() {
@@ -131,9 +130,168 @@ async function getDistancesToPreviousSubsignals(subsignalID) {
     return distances;
   }
   
+//get parent signal of given subsignal
+async function getParentSignalForSubsignal(subsignalID) {
+  const Subsignal = await Subsignal.findById(subsignalID);
+  if(Subsignal)
+  return Subsignal.signalAffiliated;
+  else 
+  return null;
+}
+
+//get all subsignals related to given signal
+async function getSubsignalsForSignal(signalID) {
+
+    const subsignals = await Subsignal.findAll({
+      where: { signalAffiliated: signalID },
+    });
+    
+  if(subsignals)
+  return subsignals;
+  else
+  return [];
+}
 
 
-  //get vehicle count for given subsignal and other three subsignals
-    async function getVehicleCountForSubsignal(subsignalID) {
-        
-    }
+ 
+    //get vehicle count for given subsignal and other three subsignals
+async function getVehicleCountForSubsignal(subsignalID) {
+
+
+   //call getParentSignalForSubsignal for each previousSubsignalID
+       //get all subsignals of parent signal
+       //get vehicle count for each subsignal
+       //calculate count by formula of 0.7*(count of given subsignal if that subsignal is in previoussubsignalIDs)+(0.3/total number of other subsignals)*(sum of all other subsignals);
+        //return count
+
+
+  // Get the IDs of the previous three subsignals
+  const previousSubsignalIDs = await getPreviousSubsignalsForSubsignal(subsignalID);
+
+  // Get the counts for each previous subsignal, including the given subsignal
+  const counts = await Promise.all(previousSubsignalIDs.map(async (previousSubsignalID) => {
+
+    // Get the parent signal for the current previous subsignal
+    const parentSignal = await getParentSignalForSubsignal(previousSubsignalID);
+
+    // Get all subsignals for the parent signal
+    const subsignals = await getSubsignalsForSignal(parentSignal.id);
+
+    // Get the most recent vehicle count for each subsignal
+    const previousCounts = await Promise.all(subsignals.map(async (subsignal) => {
+      const vehicleCount = await getMostRecentVehicleCountForSubsignal(subsignal.id);
+      return vehicleCount.count;
+    }));
+
+    // Calculate the count for the current previous subsignal and return it
+    const indexOfCurrentSubsignal = previousSubsignalIDs.indexOf(previousSubsignalID);
+    const sumOfOtherCounts = previousCounts.reduce((total, count, index) => {
+      if (index !== indexOfCurrentSubsignal) {
+        return total + count;
+      }
+      return total;
+    }, 0);
+    const countOfCurrentSubsignal = previousCounts[indexOfCurrentSubsignal];
+    const totalNumberOfSubsignals = previousCounts.length;
+    const count = 0.7 * countOfCurrentSubsignal + (0.3 / totalNumberOfSubsignals) * sumOfOtherCounts;
+    return count;
+  }));
+
+  // Return the counts for all previous subsignals
+  return counts;
+}
+
+
+//find score for subsignal
+async function getsubsignalScore(subsignalID)
+{
+  //I have vehiclecount of all subsignals
+  //I have distance of subsignals
+  
+}
+
+function reverseSigmoid(x, a) {
+  return 1 / (1 + Math.exp(-a * (-x)));
+}
+
+
+
+function calculateScore(vehicleCounts, distances) {
+  const maxDistance = Math.max(...distances);
+  const a = 0.1; // scaling parameter
+  const score = vehicleCounts.reduce((total, count, index) => {
+    const distanceDiff = maxDistance - distances[index];
+    const factor = reverseSigmoid(distanceDiff, a);
+    return total + count * factor;
+  }, 0);
+  return score / vehicleCounts.length;
+}
+
+
+
+//get score for given subsignal
+async function getScoreForSubsignal(subsignalID) {
+  // Get the vehicle counts for the given subsignal and its three previous subsignals
+  const vehicleCounts = await getVehicleCountForSubsignal(subsignalID);
+
+  // Get the distances between the given subsignal and its three previous subsignals
+  const distances = await getDistancesToPreviousSubsignals(subsignalID);
+
+  // Calculate the score for the given subsignal
+  const score = calculateScore(vehicleCounts, distances);
+  return score;
+}
+
+//get score for all subsignals of a given parent signal
+async function getScoresForSignal(signalID) {
+  // Get all subsignals for the given signal
+  const subsignals = await getSubsignalsForSignal(signalID);
+
+  // Get the scores for each subsignal
+  const scores = await Promise.all(subsignals.map(async (subsignal) => {
+
+    const vehicleCount=await getVehicleCountForSubsignal(subsignal.id);
+    const distance=await getDistancesToPreviousSubsignals(subsignal.id);
+    const scores = await getScoreForSubsignal(vehicleCount,distance);
+
+    return scores;
+  }));
+
+  return scores;
+}
+
+
+//get score for all subsignals of all signals
+
+async function getScoresForAllSignals() {
+  // Get all signals
+  const signals = await getAllSignals();
+
+  // Create a Map to store the scores for each signal
+  const scoresMap = new Map();
+
+  // Get the scores for each signal
+  await Promise.all(signals.map(async (signal) => {
+    const signalscores = await getScoresForSignal(signal.id);
+    scoresMap.set(signal.id, signalscores);
+  }));
+
+  return scoresMap;
+};
+
+
+
+const getSchedulingScore = async (req, res) => {
+  try {
+    const _response = await getScoresForAllSignals();
+    res.json(_response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports={ getSchedulingScore };
+
+
+
+
