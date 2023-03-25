@@ -12,8 +12,62 @@ const iconPerson = new L.Icon({
 });
 
 const DadarMap = () => {
+
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
+
+
+  const fetchSignalData = async () => {
+    const response = await axios.get('http://localhost:5000/api/signal/getAllSignals');
+    setSignalData(response.data);
+  };
+
+  const fetchTrafficData = async (signalId) => {
+
+
+    const response = axios.get('http://localhost:5000/api/scheduling/getTrafficDataOfSignal', {
+      params: {
+        signalId: {signalId} ,
+      
+      }
+    })
+    
+ 
+
+  const fetchRoadData = async (endPoint) => {
+    const response = await axios.get(`http://localhost:8080/api/road/fetchRoadByEndingPoint?endPoint=${endPoint}`);
+    return response.data.coordinates;
+  };
+
+  useEffect(() => {
+    fetchSignalData();
+  }, []);
+
+
+  
+  useEffect(() => {
+    const roadCoordinates = [];
+    const fetchRoadDataForSignals = async () => {
+      for (const signal of signalData) {
+        const trafficData = await fetchTrafficData(signal.id);
+        const roadCoordinates = await fetchRoadData(signal.roadEndingPoint);
+        setRoadData((prevData) => [...prevData, { coordinates: roadCoordinates, trafficData: trafficData }]);
+      }
+    };
+    fetchRoadDataForSignals();
+  }, [signalData]);
+
+  const getRoadColor1 = (trafficData) => {
+    const minVehiclesCount = 0; // minimum value for vehicle count
+    const maxVehiclesCount = 100; // maximum value for vehicle count
+    const sectors = 4; // number of color sectors
+    const range = (maxVehiclesCount - minVehiclesCount) / sectors;
+    const colors = ['green', 'yellow', 'orange', 'red'];
+    const sectorIndex = Math.floor((trafficData - minVehiclesCount) / range);
+    return colors[sectorIndex];
+  };
+
+
 
   const roadData = [
     [[19.02072745616729, 72.84339789621288], [19.01784408492782, 72.84777341516289]],
