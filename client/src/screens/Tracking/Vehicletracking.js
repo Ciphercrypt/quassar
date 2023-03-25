@@ -65,10 +65,11 @@ const VehicleTracking = () => {
   };
 
   return (
+    
     <MapContainer
       center={center}
       zoom={20}
-      style={{ height: "400px", width: "100%" }}
+      style={{ height: "1000px", width: "1980px" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
       <Marker position={markerPosition} icon={iconPerson}>

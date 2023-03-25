@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Routes>
         <Route exact path="/" element={<DadarMap />}></Route>
-        <Route exact path="/monitoring" element={<VehicleTracking />}></Route>
+        <Route exact path="/tracking" element={<VehicleTracking />}></Route>
         <Route exact path="/videos" element={<MediaControlCard />}></Route>
         <Route
           exact
