@@ -1,24 +1,9 @@
-<<<<<<< HEAD
 import React, { useState,useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
-=======
-import { React, useEffect, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Polyline,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import Typography from "@mui/material/Typography";
-import axios from "axios";
->>>>>>> fab567c0b2daa5df23f16899ba6aab28cd53c6c2
 
 const iconPerson = new L.Icon({
   iconUrl: require("./images/camera_icon.svg").default,
@@ -103,7 +88,6 @@ const DadarMap = () => {
   }, []);
   // useEffect(() => {
 
-<<<<<<< HEAD
   //   const  getAllData = () => {
   //   const allsignalData =  fetchSignalData();
     
@@ -119,32 +103,6 @@ const DadarMap = () => {
   //   getAllData();
   // }, [RoadData]);
   
-=======
-  useEffect(() => {
-    const roadCoordinates = [];
-    const fetchRoadDataForSignals = async () => {
-      for (const signal of signalData) {
-        const trafficData = await fetchTrafficData(signal.id);
-        const roadCoordinates = await fetchRoadData(signal.roadEndingPoint);
-        setRoadData((prevData) => [
-          ...prevData,
-          { coordinates: roadCoordinates, trafficData: trafficData },
-        ]);
-      }
-    };
-    fetchRoadDataForSignals();
-  }, [signalData]);
-
-  const getRoadColor1 = (trafficData) => {
-    const minVehiclesCount = 0; // minimum value for vehicle count
-    const maxVehiclesCount = 100; // maximum value for vehicle count
-    const sectors = 4; // number of color sectors
-    const range = (maxVehiclesCount - minVehiclesCount) / sectors;
-    const colors = ["green", "yellow", "orange", "red"];
-    const sectorIndex = Math.floor((trafficData - minVehiclesCount) / range);
-    return colors[sectorIndex];
-  };
->>>>>>> fab567c0b2daa5df23f16899ba6aab28cd53c6c2
 
   const roadData = [
     [
@@ -184,30 +142,18 @@ const DadarMap = () => {
     [19.017714459676327, 72.84761331851789],
     [19.028, 72.836],
   ];
-<<<<<<< HEAD
   // const roadCoordinates = [[19.017714459676327, 72.84761331851789], [19.025, 72.836]];
   // const roadCoordinates1 = [[19.017714459676327, 72.84761331851789], [19.028, 72.836]];
-=======
->>>>>>> fab567c0b2daa5df23f16899ba6aab28cd53c6c2
 
   
 
-<<<<<<< HEAD
   
-=======
-    //randomly return color
-    const colors = ["green", "red", "yellow", "orange", "blue"];
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    return colors[randomIndex];
-  };
->>>>>>> fab567c0b2daa5df23f16899ba6aab28cd53c6c2
 
   return (
     <>
       <Typography variant="h4" component="h4" gutterBottom>
         Real Time monitoring Graph
       </Typography>
-<<<<<<< HEAD
     <MapContainer center={center} zoom={15} style={{ height: '1000px', width: '1980px' }}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
 
@@ -250,29 +196,6 @@ const DadarMap = () => {
           weight={10}
         />
 
-=======
-      <MapContainer
-        center={center}
-        zoom={15}
-        style={{ height: "1000px", width: "1980px" }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
-        <Marker position={markerPosition} icon={iconPerson}>
-          <Popup>
-            <div>
-              <h3>Cross Section of Roads near Dadar</h3>
-              <p>Insert data here</p>
-            </div>
-          </Popup>
-        </Marker>
-
-        {roadData.map((coordinates, index) => (
-          <Polyline
-            positions={coordinates}
-            color={getRoadColor(coordinates)}
-            weight={10}
-          />
->>>>>>> fab567c0b2daa5df23f16899ba6aab28cd53c6c2
         ))}
       </MapContainer>
     </>
