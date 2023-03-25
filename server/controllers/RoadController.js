@@ -80,6 +80,6 @@ const fetchRoadByEndingPoint = async (req, res) => {
 };
 
 
-module.exports = { createRoad, editRoad, fetchRoad, deleteRoad ,getTrafficDataOfSignal};
+module.exports = { createRoad, editRoad, fetchRoad, deleteRoad ,fetchRoadByEndingPoint};
 
 

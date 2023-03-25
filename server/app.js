@@ -7,14 +7,14 @@ dotenv.config()
 
 const userRoutes=require('./routes/UserRoutes');
 const tapRoutes=require('./routes/TapRoutes');
-const {CCTVRoutes}=require('./routes/CCTVRoutes');
-const {RoadRoutes}=require('./routes/RoadRoutes');
-const {SignalDistanceRoutes}=require('./routes/SignalDistanceRoutes');
-const {VehicleCountRoutes}=require('./routes/VehicleCountRoutes');
-const {SignalRoutes}=require('./routes/SignalRoutes');
-const {SubsignalRoutes}=require('./routes/SubsignalRoutes');
-const {VehicleTrackRoutes}=require('./routes/VehicleTrackRoutes');
-const {SchedulingRoutes}=require('./routes/SchedulingRoutes');
+const CCTVRoutes=require('./routes/CCTVRoutes');
+const RoadRoutes=require('./routes/RoadRoutes');
+const SignalDistanceRoutes=require('./routes/SignalDistanceRoutes');
+const VehicleCountRoutes=require('./routes/VehicleCountRoutes');
+const SignalRoutes=require('./routes/SignalRoutes');
+const SubsignalRoutes=require('./routes/SubsignalRoutes');
+const VehicleTrackRoutes=require('./routes/VehicleTrackRoutes');
+const SchedulingRoutes=require('./routes/SchedulingRoutes');
 
 var jsonParser = bodyParser.json();
 var urlEncoded = bodyParser.urlencoded({ extended: true });

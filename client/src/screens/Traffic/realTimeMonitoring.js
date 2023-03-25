@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState,useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
 import Typography from '@mui/material/Typography';
+import axios from 'axios';
 
 const iconPerson = new L.Icon({
   iconUrl: require('./images/camera_icon.svg').default,
@@ -15,59 +16,94 @@ const DadarMap = () => {
 
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
+  const [RoadData,setRoadData]=useState([]);
 
 
   const fetchSignalData = async () => {
     const response = await axios.get('http://localhost:5000/api/signal/getAllSignals');
-    setSignalData(response.data);
+    
+    return response.data.signal;
   };
 
   const fetchTrafficData = async (signalId) => {
+    const response = await axios.get(`http://localhost:5000/api/scheduling/getTrafficDataOfSignal`, { params: { signalId: signalId } });
+    return response.data.count;
+  };
 
+  const getRoadColor = (vehiclecount) => {
+    if (vehiclecount < 25) {
+      return 'green';
 
-    const response = axios.get('http://localhost:5000/api/scheduling/getTrafficDataOfSignal', {
-      params: {
-        signalId: {signalId} ,
-      
-      }
-    })
-    
+    }
+    else if(vehiclecount < 50){
+      return 'yellow';
+    }
+    else
+    return 'red';
  
+  }
 
   const fetchRoadData = async (endPoint) => {
-    const response = await axios.get(`http://localhost:8080/api/road/fetchRoadByEndingPoint?endPoint=${endPoint}`);
+    const response = await axios.get(`http://localhost:8080/api/road/fetchRoadByEndingPoint`, { params: { endingPoint: endPoint } }
+    );
     return response.data.coordinates;
   };
 
   useEffect(() => {
-    fetchSignalData();
-  }, []);
+    // const dt=  fetchSignalData().then((data)=>{
+    //    console.log(data.signal);
+    //    return data.signal;
+    //  });
+    
+    // console.log(dt);
 
 
-  
-  useEffect(() => {
-    const roadCoordinates = [];
-    const fetchRoadDataForSignals = async () => {
-      for (const signal of signalData) {
-        const trafficData = await fetchTrafficData(signal.id);
-        const roadCoordinates = await fetchRoadData(signal.roadEndingPoint);
-        setRoadData((prevData) => [...prevData, { coordinates: roadCoordinates, trafficData: trafficData }]);
-      }
+    const getData = async () => {
+      const dt = await fetchSignalData();
+      console.log(dt);
+      dt.map((data, index) => {
+        // Perform your operations on each element of the array here
+        const vehicleCount =async () => {
+          const count = await fetchTrafficData(data.ID);
+          console.log(count);
+          return count  ;
+           
+        }
+        const roadCoordinates =async () => {
+          const coordinates = await fetchRoadData(data.coordinates);
+          console.log("coordinates"+coordinates);
+          return coordinates;
+        }
+        
+
+
+      setRoadData([...RoadData,{signalID:data.ID,signalCoordinates:data.coordinates, roadcoordinates: roadCoordinates, trafficData: vehicleCount ,color: getRoadColor(vehicleCount),location:data.location}]);
+
+        console.log(RoadData);
+      });
     };
-    fetchRoadDataForSignals();
-  }, [signalData]);
+  
+    getData();
+  
+     
+  }, []);
+  // useEffect(() => {
 
-  const getRoadColor1 = (trafficData) => {
-    const minVehiclesCount = 0; // minimum value for vehicle count
-    const maxVehiclesCount = 100; // maximum value for vehicle count
-    const sectors = 4; // number of color sectors
-    const range = (maxVehiclesCount - minVehiclesCount) / sectors;
-    const colors = ['green', 'yellow', 'orange', 'red'];
-    const sectorIndex = Math.floor((trafficData - minVehiclesCount) / range);
-    return colors[sectorIndex];
-  };
-
-
+  //   const  getAllData = () => {
+  //   const allsignalData =  fetchSignalData();
+    
+  //     for (const signal of allsignalData) {
+  //       const vehicleCount =  fetchTrafficData(signal.ID);
+  //       const roadCoordinates =  fetchRoadData(signal.roadEndingPoint);
+  //       //{signalID:signal.ID,signalCoordinates:signal.coordinates, roadcoordinates: roadCoordinates, trafficData: vehicleCount ,color: getRoadColor(vehicleCount),location:signal.location}
+  //       setRoadData([...RoadData,{signalID:signal.ID,signalCoordinates:signal.coordinates, roadcoordinates: roadCoordinates, trafficData: vehicleCount ,color: getRoadColor(vehicleCount),location:signal.location}]);
+  //     }
+  //     console.log(RoadData);
+    
+  //   }
+  //   getAllData();
+  // }, [RoadData]);
+  
 
   const roadData = [
     [[19.02072745616729, 72.84339789621288], [19.01784408492782, 72.84777341516289]],
@@ -75,20 +111,12 @@ const DadarMap = () => {
     [[19.01551769208689, 72.85141246081042],[19.014852786064026, 72.85060047767622]],
     [[19.014852786064026, 72.85060047767622],[19.012717537685944, 72.84925574782181]]
   ];
-  const roadCoordinates = [[19.017714459676327, 72.84761331851789], [19.025, 72.836]];
-  const roadCoordinates1 = [[19.017714459676327, 72.84761331851789], [19.028, 72.836]];
+  // const roadCoordinates = [[19.017714459676327, 72.84761331851789], [19.025, 72.836]];
+  // const roadCoordinates1 = [[19.017714459676327, 72.84761331851789], [19.028, 72.836]];
 
+  
 
-  const getRoadColor = (coordinates) => {
-    const [startLat, startLng] = coordinates[0];
-    const [endLat, endLng] = coordinates[coordinates.length - 1];
-
-    
-  //randomly return color
-  const colors = ['green', 'red', 'yellow', 'orange', 'blue'];
-  const randomIndex = Math.floor(Math.random() * colors.length);
-  return colors[randomIndex];
-  }
+  
 
   return (
     <>
@@ -97,6 +125,28 @@ const DadarMap = () => {
       </Typography>
     <MapContainer center={center} zoom={15} style={{ height: '1000px', width: '1980px' }}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
+
+      {/* {RoadData.map((data, index) => (
+  <Marker key={index} position={data.signalCoordinates}>
+    <Popup>
+      <div>
+        <h3>{`Signal ID: ${data.signalID}`}</h3>
+        <p>{`Location: ${data.location}`}</p>
+        <p>{`Vehicle Count: ${data.trafficData}`}</p>
+      </div>
+    </Popup>
+    {data.roadCoordinates.map((coordinates, index) => (
+      <Polyline
+        key={index}
+        positions={coordinates}
+        color={data.color}
+        weight={10}
+      />
+    ))}
+  </Marker>
+))} */}
+
+    
       <Marker position={markerPosition} icon={iconPerson} >
         <Popup>
           <div>
