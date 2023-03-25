@@ -22,6 +22,7 @@ const DadarMap = () => {
   const center = [19.017714459676327, 72.84761331851789];
   const markerPosition = [19.017714459676327, 72.84761331851789];
   const [RoadData, setRoadData] = useState([]);
+  const chahat=[];
 
   const fetchSignalData = async () => {
     const response = await axios.get(
@@ -86,24 +87,34 @@ const DadarMap = () => {
         let vC = await vehicleCount(data.ID);
         let rc =await roadCoordinatesFetcher(data.coordinates);
         console.log("rc: ", rc);
-        setRoadData([
-          ...RoadData,
-          {
-            signalID: data.ID,
-            signalCoordinates: data.coordinates,
-            roadcoordinates: rc,
-            trafficData: vC,
-            color: getRoadColor(vC),
-            location: data.location,
-          },
-        ]);
-
+        chahat.push([{
+          signalID: data.ID,
+          signalCoordinates: data.coordinates,
+          roadcoordinates: rc,
+          trafficData: vC,
+          color: getRoadColor(vC),
+          location: data.location,
+        }]);
+        // setRoadData([
+        //   ...RoadData,
+        //   {
+        //     signalID: data.ID,
+        //     signalCoordinates: data.coordinates,
+        //     roadcoordinates: rc,
+        //     trafficData: vC,
+        //     color: getRoadColor(vC),
+        //     location: data.location,
+        //   },
+        // ]);
+        console.log("bolo zooban kesari"+chahat);
         console.log("RoadData="+index+" =>  " +JSON.stringify(RoadData));
       });
+      setRoadData(chahat);
     };
 
    useEffect(()=>{
     getData();
+    console.log("poonam"+chahat);
        
    },[]);
   // useEffect(() => {
@@ -175,6 +186,8 @@ const DadarMap = () => {
         style={{ height: "1000px", width: "1980px" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
+
+        {}
 
          {RoadData.map((data, index) => {
           

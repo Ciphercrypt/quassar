@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const vehicleCountSchema = new mongoose.Schema({
-  signalID: {
+  subsignalID: {
     type: String,
     required: true
   },

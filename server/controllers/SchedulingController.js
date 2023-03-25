@@ -150,6 +150,67 @@ async function getSubsignalsForSignal(signalID) {
   else return [];
 }
 
+
+async function getMostRecentVehicleCountForSubsignal(subsignalID) {
+  console.log("I M IN")
+  const vehicleCount = await VehicleCount.findOne({
+    subsignalID: subsignalID,
+  })
+    .sort({ timestamp: -1 })
+    .limit(1);
+    if(vehicleCount) return vehicleCount.count;
+    else
+    return 0;
+}
+//get vehicle count for given subsignal and other three subsignals
+async function getVehicleCountForSignal(signalID) {
+  //call getParentSignalForSubsignal for each previousSubsignalID
+  //get all subsignals of parent signal
+  //get vehicle count for each subsignal
+  //calculate count by formula of 0.7*(count of given subsignal if that subsignal is in previoussubsignalIDs)+(0.3/total number of other subsignals)*(sum of all other subsignals);
+  //return count
+
+  // Get the IDs of the previous three subsignals
+  const previousSubsignalIDs = await getAllSubsignalsForSignal(
+    signalID
+  );
+
+  
+
+  // Get the counts for each previous subsignal, including the given subsignal
+
+  const previousCounts = await Promise.all(
+    previousSubsignalIDs.map(async (subsignal) => {
+      const vehicleCount = await getMostRecentVehicleCountForSubsignal(
+        subsignal.ID
+      );
+      console.log(vehicleCount);
+      if(vehicleCount!=null)
+      count+=vehicleCount;
+      else
+      return 0;
+    })
+  );
+
+
+      // Calculate the count for the current previous subsignal and return it
+   
+    console.log(previousCounts);
+
+      const sumOfOtherCounts = previousCounts.reduce((total, count, index) => {
+        
+          return total + count;
+        
+      }, 0);
+
+      
+  
+
+  // Return the counts for all previous subsignals
+  return sumOfOtherCounts/previousCounts.length;
+}
+
+
 //get vehicle count for given subsignal and other three subsignals
 async function getVehicleCountForSubsignal(subsignalID) {
   //call getParentSignalForSubsignal for each previousSubsignalID
@@ -206,6 +267,7 @@ async function getVehicleCountForSubsignal(subsignalID) {
   return counts;
 }
 
+
 //find score for subsignal
 async function getsubsignalScore(subsignalID) {
   //I have vehiclecount of all subsignals
@@ -258,6 +320,16 @@ async function getScoresForSignal(signalID) {
 
   return scores;
 }
+
+
+//get roadcoordinates by endingPoint
+async function getRoadCoordinatesByEndingPoint(endingPoint) {
+  const roadCoordinates = await Road.find({
+    endingCoordinates: endingPoint,
+  });
+  return roadCoordinates.coordinates;
+}
+
 
 //get score for all subsignals of all signals
 
@@ -314,4 +386,49 @@ const getTrafficDataOfSignal = async (req, res) => {
   }
 };
 
-module.exports = { getSchedulingScore, getTrafficDataOfSignal };
+const getTrafficDataOfAllSignals = async (req, res) => {
+  try {
+    const signals = await getAllSignals();
+    const data=[];
+    await Promise.all(
+      signals.map(async (signal) => {
+
+        const subsignals = await getSubsignalsForSignal(signal.ID);
+
+        var count=0;
+
+        await Promise.all(
+          subsignals.map(async (subsignal) => {
+            console.log(subsignal);
+            const vehicleCounts = await VehicleCount.find({ ID: subsignal.ID })
+              .sort({ timestamp: -1 })
+              .limit(1);
+            console.log("vehicle count", vehicleCounts[0].count);
+            if (vehicleCounts.length > 0) {
+              count += vehicleCounts[0].count;
+            }
+          })
+        );
+
+
+
+        //const vehicleCount = await getVehicleCountForSignal(signal.ID);
+        const RoadCoordinates = await getRoadCoordinatesByEndingPoint(signal.coordinates);
+        const signalData = {
+          signalId: signal.ID,
+          vehicleCount: count,
+          roadCoordinates: RoadCoordinates,
+          location: signal.location,
+          signalCoordinates: signal.coordinates,
+
+        };
+        data.push(signalData);
+      })
+    );
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getSchedulingScore, getTrafficDataOfSignal,getTrafficDataOfAllSignals };
