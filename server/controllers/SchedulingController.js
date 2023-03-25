@@ -46,6 +46,8 @@ async function getAllSignals() {
   }
 
 
+
+
 //get co-ordinates of signal related to given subsignal
   async function getCoordinatesForSubsignal(subsignalID) {
     try {
@@ -290,7 +292,27 @@ const getSchedulingScore = async (req, res) => {
   }
 };
 
-module.exports={ getSchedulingScore };
+const getTrafficDataOfSignal = async (req, res) => {
+  try {
+    const {signalID} = body.params;
+    const subsignals = await getSubsignalsForSignal(signalID);
+    var count = 0;
+    await Promise.all(subsignals.map(async (subsignal) => {
+      const vehicleCounts = await VehicleCount.find({ ID: subsignal.ID }).sort({ timestamp: -1 }).limit(1);
+      if (vehicleCounts.length > 0) {
+        count += vehicleCounts[0].count;
+      }
+    }));
+
+    res.json(count);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+module.exports={ getSchedulingScore,getTrafficDataOfSignal };
 
 
 
