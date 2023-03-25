@@ -2,6 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
+import Typography from '@mui/material/Typography';
 
 const iconPerson = new L.Icon({
   iconUrl: require('./images/camera_icon.svg').default,
@@ -36,7 +37,11 @@ const DadarMap = () => {
   }
 
   return (
-    <MapContainer center={center} zoom={20} style={{ height: '400px', width: '100%' }}>
+    <>
+    <Typography variant="h4" component="h4" gutterBottom>
+      Real Time monitoring Graph
+      </Typography>
+    <MapContainer center={center} zoom={15} style={{ height: '1000px', width: '1980px' }}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?style=transport" />
       <Marker position={markerPosition} icon={iconPerson} >
         <Popup>
@@ -60,6 +65,7 @@ const DadarMap = () => {
     
 
     </MapContainer>
+    </>
   );
 };
 

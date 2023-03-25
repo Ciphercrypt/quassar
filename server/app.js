@@ -33,6 +33,17 @@ let _response = {};
     
 app.use('/api/user', userRoutes);
 app.use('/api/tap', tapRoutes);
+app.use('/api/cctv', CCTVRoutes);
+app.use('/api/road', RoadRoutes);
+app.use('/api/signal', SignalRoutes);
+app.use('/api/signaldistance', SignalDistanceRoutes);
+app.use('/api/scheduling', SchedulingRoutes);
+app.use('/api/subsignal', SubsignalRoutes);
+app.use('/api/vehiclecount', VehicleCountRoutes);
+app.use('/api/vehicletrack', VehicleTrackRoutes);
+
+
+
 
 
 app.use((req, res, next) => {
