@@ -46,6 +46,7 @@ const fetchRoad = async (req, res) => {
   }
 };
 
+
 // Delete a road by its ID
 const deleteRoad = async (req, res) => {
   try {
