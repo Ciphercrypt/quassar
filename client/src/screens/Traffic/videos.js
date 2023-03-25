@@ -1,6 +1,6 @@
 import cars from './videoplayback.mp4';
 
-function Videos() {
+const  Videos= ()=> {
     return (
    
     <div >
@@ -15,4 +15,5 @@ function Videos() {
     )
 }
 
-export { Videos }
+export default Videos;
+
