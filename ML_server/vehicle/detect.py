@@ -6,7 +6,7 @@ NMS_THRESHOLD = 0.4
 COLORS = [(0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
 
 class_names = []
-with open("classes.txt", "r") as f:
+with open("./vehicle/classes.txt", "r") as f:
     class_names = [cname.strip() for cname in f.readlines()]
 
     # net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -32,6 +32,7 @@ def countVehicle(CCTVID, url, subsignalassociated, collection):
 
     i=0 
     st = time.time()
+    count_window = []
     while True:
         (grabbed, frame) = cap.read()
         if not grabbed:
@@ -42,11 +43,13 @@ def countVehicle(CCTVID, url, subsignalassociated, collection):
         # print("Classes ",classes,type(classes))
         end = time.time()
         print(f"{CCTVID}'s count : ",count(classes), " Time :",str(end - start))
+        count_window.append(count(classes))
 
         if end - st > 10 :
             st = end
-            vehicleCountData = { "CCTVID": CCTVID, "count": count(classes), "timestamp":end, "signalID":subsignalassociated }
+            vehicleCountData = { "CCTVID": CCTVID, "count": math.ceil(sum(count_window) / len(count_window)), "timestamp":end, "signalID":subsignalassociated }
             x = collection.insert_one(vehicleCountData)
+            count_window = []
             print(x.inserted_id) 
 
         for (classid, score, box) in zip(classes, scores, boxes):
