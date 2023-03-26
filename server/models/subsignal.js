@@ -7,7 +7,7 @@ const subsignalSchema = new mongoose.Schema({
   ID: {
     type: String,
     required: true,
-    unique: true,
+    
   },
   signalAffiliated: {
     type: String,

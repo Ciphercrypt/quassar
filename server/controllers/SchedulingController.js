@@ -10,7 +10,7 @@
 // now for one perticular signal , there are other subsignals also, repeat this process for other subsignals and divide the given scheduling time based on score.
 
 const Signal = require("../models/signal");
-const Subsignal = require("../models/subsignal");
+const SubSignal = require("../models/subsignal");
 const CCTVCamera = require("../models/cctv");
 const Signaldistance = require("../models/signaldistances");
 const VehicleCount = require("../models/vehiclecount");
@@ -22,13 +22,17 @@ async function getAllSignals() {
 }
 
 async function getAllSubsignalsForSignal(signalID) {
-  const subsignals = await Subsignal.find({ signalAffiliated: signalID });
+  const subsignals = await SubSignal.find({ signalAffiliated: signalID });
+
+  if (!subsignals) {
+    return [];
+  }
   return subsignals;
 }
 
 //get cctv related to given subsignal
 async function getCCTVCameraForSubsignal(subsignalID) {
-  const subsignal = await Subsignal.findOne({ ID: subsignalID });
+  const subsignal = await SubSignal.findOne({ ID: subsignalID });
   if (!subsignal) {
     throw new Error(`Subsignal with ID ${subsignalID} not found`);
   }
@@ -45,38 +49,38 @@ async function getCCTVCameraForSubsignal(subsignalID) {
 
 //get co-ordinates of signal related to given subsignal
 async function getCoordinatesForSubsignal(subsignalID) {
-  try {
-    const subsignal = await Subsignal.findById(subsignalID);
+  const subsignal = await SubSignal.findOne({ ID: subsignalID });
+  if (subsignal) {
     const signalID = subsignal.signalAffiliated;
-    const signal = await Signal.findById(signalID);
+    const signal = await Signal.findOne({ ID: signalID });
     return signal.coordinates;
-  } catch (error) {
-    console.error(error);
-  }
+  } else return null;
 }
 
 //get previous subsignals related to given subsignal
 async function getPreviousSubsignalsForSubsignal(subsignalID) {
-  const subSignal = await Subsignal.findById(subsignalID);
+  const subSignal = await SubSignal.findOne({ ID: subsignalID });
 
   // Check if the current subsignal has a previous subsignal
-  if (!subSignal.previousSubsignalID) {
+  console.log("subsignalhere", subSignal);
+  if (!subSignal) {
     return [];
   }
 
   // Get the previous subsignal and push it to an array
   const previousSubsignalID = subSignal.previousSubSignal;
-  const previousSubsignals = [];
+  const previousSubsignalIDs = [];
 
   // If the previous subsignal has a previous subsignal, repeat the process
   for (let i = 0; i < 3; i++) {
     if (!previousSubsignalID) break;
     previousSubsignalIDs.push(previousSubsignalID);
-    const previousSubsignal = await Subsignal.findById(previousSubsignalID);
-    previousSubsignalID = previousSubsignal.previousSubsignalID;
+    const prev = await SubSignal.findOne({ ID: previousSubsignalID });
+    if (prev) previousSubsignalID = prev.previousSubSignal;
+    else break;
   }
 
-  return previousSubsignals;
+  return previousSubsignalIDs;
 }
 
 //get distance between co-ordinates
@@ -100,11 +104,11 @@ function getDistanceFromLatLonInKm(coord1, coord2) {
 //get distance between a given subsignal and other three subsignals
 async function getDistancesToPreviousSubsignals(subsignalID) {
   // Get the current subsignal
-  const currentSubsignal = await Subsignal.findById(subsignalID);
+  const currentSubsignal = await SubSignal.findOne({ ID: subsignalID });
   const { signalAffiliated } = currentSubsignal;
 
   // Get the signal that the current subsignal is affiliated with
-  const affiliatedSignal = await Signal.findById(signalAffiliated);
+  const affiliatedSignal = await Signal.findOne({ ID: signalAffiliated });
 
   // Find the coordinates of the current subsignal and its affiliated signal
   const currentSubsignalCoordinates = affiliatedSignal.coordinates;
@@ -121,11 +125,13 @@ async function getDistancesToPreviousSubsignals(subsignalID) {
       const previousSubsignalCoordinates = await getCoordinatesForSubsignal(
         previousSubsignalID
       );
-      const distance = await getDistanceBetweenCoordinates(
-        currentSubsignalCoordinates,
-        previousSubsignalCoordinates
-      );
-      return distance;
+      if (previousSubsignalID && currentSubsignalCoordinates) {
+        const distance = await getDistanceFromLatLonInKm(
+          currentSubsignalCoordinates,
+          previousSubsignalCoordinates
+        );
+        return distance;
+      }
     })
   );
 
@@ -134,33 +140,31 @@ async function getDistancesToPreviousSubsignals(subsignalID) {
 
 //get parent signal of given subsignal
 async function getParentSignalForSubsignal(subsignalID) {
-  const Subsignal = await Subsignal.findById(subsignalID);
-  if (Subsignal) return Subsignal.signalAffiliated;
+  const Subsignal = await SubSignal.findOne({ ID: subsignalID });
+  if (Subsignal) return SubSignal.signalAffiliated;
   else return null;
 }
 
 //get all subsignals related to given signal
 async function getSubsignalsForSignal(signalID) {
-  // console.log("sign", signalID);
-  const subsignals = await Subsignal.find({
+  //console.log("sign", signalID);
+  const subsignals = await SubSignal.find({
     signalAffiliated: signalID,
   });
-  // console.log("subsignal", subsignals);
+  console.log("subsignal", subsignals);
   if (subsignals) return subsignals;
   else return [];
 }
 
-
 async function getMostRecentVehicleCountForSubsignal(subsignalID) {
-  console.log("I M IN")
+  console.log("I M IN");
   const vehicleCount = await VehicleCount.findOne({
     subsignalID: subsignalID,
   })
     .sort({ timestamp: -1 })
     .limit(1);
-    if(vehicleCount) return vehicleCount.count;
-    else
-    return 0;
+  if (vehicleCount) return vehicleCount.count;
+  else return 0;
 }
 //get vehicle count for given subsignal and other three subsignals
 async function getVehicleCountForSignal(signalID) {
@@ -171,11 +175,7 @@ async function getVehicleCountForSignal(signalID) {
   //return count
 
   // Get the IDs of the previous three subsignals
-  const previousSubsignalIDs = await getAllSubsignalsForSignal(
-    signalID
-  );
-
-  
+  const previousSubsignalIDs = await getAllSubsignalsForSignal(signalID);
 
   // Get the counts for each previous subsignal, including the given subsignal
 
@@ -185,31 +185,22 @@ async function getVehicleCountForSignal(signalID) {
         subsignal.ID
       );
       console.log(vehicleCount);
-      if(vehicleCount!=null)
-      count+=vehicleCount;
-      else
-      return 0;
+      if (vehicleCount != null) count += vehicleCount;
+      else return 0;
     })
   );
 
+  // Calculate the count for the current previous subsignal and return it
 
-      // Calculate the count for the current previous subsignal and return it
-   
-    console.log(previousCounts);
+  console.log(previousCounts);
 
-      const sumOfOtherCounts = previousCounts.reduce((total, count, index) => {
-        
-          return total + count;
-        
-      }, 0);
-
-      
-  
+  const sumOfOtherCounts = previousCounts.reduce((total, count, index) => {
+    return total + count;
+  }, 0);
 
   // Return the counts for all previous subsignals
-  return sumOfOtherCounts/previousCounts.length;
+  return sumOfOtherCounts / previousCounts.length;
 }
-
 
 //get vehicle count for given subsignal and other three subsignals
 async function getVehicleCountForSubsignal(subsignalID) {
@@ -233,40 +224,44 @@ async function getVehicleCountForSubsignal(subsignalID) {
       );
 
       // Get all subsignals for the parent signal
-      const subsignals = await getSubsignalsForSignal(parentSignal.id);
+      if (parentSignal) {
+        const subsignals = await getSubsignalsForSignal(parentSignal.ID);
 
-      // Get the most recent vehicle count for each subsignal
-      const previousCounts = await Promise.all(
-        subsignals.map(async (subsignal) => {
-          const vehicleCount = await getMostRecentVehicleCountForSubsignal(
-            subsignal.id
-          );
-          return vehicleCount.count;
-        })
-      );
+        // Get the most recent vehicle count for each subsignal
+        const previousCounts = await Promise.all(
+          subsignals.map(async (subsignal) => {
+            const vehicleCount = await getMostRecentVehicleCountForSubsignal(
+              subsignal.ID
+            );
+            return vehicleCount.count;
+          })
+        );
 
-      // Calculate the count for the current previous subsignal and return it
-      const indexOfCurrentSubsignal =
-        previousSubsignalIDs.indexOf(previousSubsignalID);
-      const sumOfOtherCounts = previousCounts.reduce((total, count, index) => {
-        if (index !== indexOfCurrentSubsignal) {
-          return total + count;
-        }
-        return total;
-      }, 0);
-      const countOfCurrentSubsignal = previousCounts[indexOfCurrentSubsignal];
-      const totalNumberOfSubsignals = previousCounts.length;
-      const count =
-        0.7 * countOfCurrentSubsignal +
-        (0.3 / totalNumberOfSubsignals) * sumOfOtherCounts;
-      return count;
+        // Calculate the count for the current previous subsignal and return it
+        const indexOfCurrentSubsignal =
+          previousSubsignalIDs.indexOf(previousSubsignalID);
+        const sumOfOtherCounts = previousCounts.reduce(
+          (total, count, index) => {
+            if (index !== indexOfCurrentSubsignal) {
+              return total + count;
+            }
+            return total;
+          },
+          0
+        );
+        const countOfCurrentSubsignal = previousCounts[indexOfCurrentSubsignal];
+        const totalNumberOfSubsignals = previousCounts.length;
+        const count =
+          0.7 * countOfCurrentSubsignal +
+          (0.3 / totalNumberOfSubsignals) * sumOfOtherCounts;
+        return count;
+      }
     })
   );
 
   // Return the counts for all previous subsignals
   return counts;
 }
-
 
 //find score for subsignal
 async function getsubsignalScore(subsignalID) {
@@ -306,12 +301,13 @@ async function getScoreForSubsignal(subsignalID) {
 async function getScoresForSignal(signalID) {
   // Get all subsignals for the given signal
   const subsignals = await getSubsignalsForSignal(signalID);
+  console.log("subsignals", subsignals);
 
   // Get the scores for each subsignal
   const scores = await Promise.all(
     subsignals.map(async (subsignal) => {
-      const vehicleCount = await getVehicleCountForSubsignal(subsignal.id);
-      const distance = await getDistancesToPreviousSubsignals(subsignal.id);
+      const vehicleCount = await getVehicleCountForSubsignal(subsignal.ID);
+      const distance = await getDistancesToPreviousSubsignals(subsignal.ID);
       const scores = await getScoreForSubsignal(vehicleCount, distance);
 
       return scores;
@@ -321,19 +317,15 @@ async function getScoresForSignal(signalID) {
   return scores;
 }
 
-
 //get roadcoordinates by endingPoint
-async function getRoadCoordinatesByEndingPoint(lat,lang) {
-  const endingPoint=[lat,lang];
-   // const { endingPoint } = req.query;
-    const road = await Road.findOne({ endingCoordinates: endingPoint });
+async function getRoadCoordinatesByEndingPoint(lat, lang) {
+  const endingPoint = [lat, lang];
+  // const { endingPoint } = req.query;
+  const road = await Road.findOne({ endingCoordinates: endingPoint });
 
-    if(road)
-    return road.coordinates;
-    else
-    return [];
+  if (road) return road.coordinates;
+  else return [];
 }
-
 
 //get score for all subsignals of all signals
 
@@ -341,14 +333,15 @@ async function getScoresForAllSignals() {
   // Get all signals
   const signals = await getAllSignals();
 
+  console.log("signals", signals);
   // Create a Map to store the scores for each signal
   const scoresMap = new Map();
 
   // Get the scores for each signal
   await Promise.all(
     signals.map(async (signal) => {
-      const signalscores = await getScoresForSignal(signal.id);
-      scoresMap.set(signal.id, signalscores);
+      const signalscores = await getScoresForSignal(signal.ID);
+      scoresMap.set(signal.ID, signalscores);
     })
   );
 
@@ -358,6 +351,7 @@ async function getScoresForAllSignals() {
 const getSchedulingScore = async (req, res) => {
   try {
     const _response = await getScoresForAllSignals();
+    console.log("response", _response);
     res.json(_response);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -393,13 +387,12 @@ const getTrafficDataOfSignal = async (req, res) => {
 const getTrafficDataOfAllSignals = async (req, res) => {
   try {
     const signals = await getAllSignals();
-    const data=[];
+    const data = [];
     await Promise.all(
       signals.map(async (signal) => {
-
         const subsignals = await getSubsignalsForSignal(signal.ID);
 
-        var count=0;
+        var count = 0;
 
         await Promise.all(
           subsignals.map(async (subsignal) => {
@@ -414,17 +407,17 @@ const getTrafficDataOfAllSignals = async (req, res) => {
           })
         );
 
-
-
         //const vehicleCount = await getVehicleCountForSignal(signal.ID);
-        const RoadCoordinates = await getRoadCoordinatesByEndingPoint(signal.coordinates[0],signal.coordinates[1]);
+        const RoadCoordinates = await getRoadCoordinatesByEndingPoint(
+          signal.coordinates[0],
+          signal.coordinates[1]
+        );
         const signalData = {
           signalId: signal.ID,
           vehicleCount: count,
           roadCoordinates: RoadCoordinates,
           location: signal.location,
           signalCoordinates: signal.coordinates,
-
         };
         data.push(signalData);
       })
@@ -435,4 +428,8 @@ const getTrafficDataOfAllSignals = async (req, res) => {
   }
 };
 
-module.exports = { getSchedulingScore, getTrafficDataOfSignal,getTrafficDataOfAllSignals };
+module.exports = {
+  getSchedulingScore,
+  getTrafficDataOfSignal,
+  getTrafficDataOfAllSignals,
+};
