@@ -4,6 +4,7 @@ import VehicleTracking from "./screens/Tracking/Vehicletracking";
 import MediaControlCard from "./screens/Traffic/videofiletemp";
 import DadarMap from "./screens/Traffic/realTimeMonitoring";
 import AddRoadDetails from "./components/AddData/addRoadDetails";
+import DadarMapOpt from "./screens/Traffic/trafficOptimization";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 function App() {
   return (
@@ -16,6 +17,12 @@ function App() {
           exact
           path="/addRoadDetails"
           element={<AddRoadDetails />}
+        ></Route>
+
+<Route
+          exact
+          path="/optimization"
+          element={<DadarMapOpt />}
         ></Route>
       </Routes>
     </Router>

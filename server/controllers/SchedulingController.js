@@ -16,6 +16,7 @@ const Signaldistance = require("../models/signaldistances");
 const VehicleCount = require("../models/vehiclecount");
 const Road = require("../models/road");
 
+const data=require("../config/data.json");
 async function getAllSignals() {
   const signals = await Signal.find({});
   return signals;
@@ -54,7 +55,8 @@ async function getCoordinatesForSubsignal(subsignalID) {
     const signalID = subsignal.signalAffiliated;
     const signal = await Signal.findOne({ ID: signalID });
     return signal.coordinates;
-  } else return null;
+  } else 
+  return [];
 }
 
 //get previous subsignals related to given subsignal
@@ -83,6 +85,15 @@ async function getPreviousSubsignalsForSubsignal(subsignalID) {
   return previousSubsignalIDs;
 }
 
+
+function deg2rad(degrees) {
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
+
+
+
+
 //get distance between co-ordinates
 function getDistanceFromLatLonInKm(coord1, coord2) {
   const [lat1, lon1] = coord1;
@@ -105,12 +116,14 @@ function getDistanceFromLatLonInKm(coord1, coord2) {
 async function getDistancesToPreviousSubsignals(subsignalID) {
   // Get the current subsignal
   const currentSubsignal = await SubSignal.findOne({ ID: subsignalID });
-  const { signalAffiliated } = currentSubsignal;
+  const { signalAffiliated } = currentSubsignal.signalAffiliated;
 
   // Get the signal that the current subsignal is affiliated with
+ 
   const affiliatedSignal = await Signal.findOne({ ID: signalAffiliated });
 
   // Find the coordinates of the current subsignal and its affiliated signal
+  if(affiliatedSignal){
   const currentSubsignalCoordinates = affiliatedSignal.coordinates;
   const affiliatedSignalCoordinates = affiliatedSignal.coordinates;
 
@@ -136,6 +149,8 @@ async function getDistancesToPreviousSubsignals(subsignalID) {
   );
 
   return distances;
+  }
+  else return [];
 }
 
 //get parent signal of given subsignal
@@ -350,9 +365,9 @@ async function getScoresForAllSignals() {
 
 const getSchedulingScore = async (req, res) => {
   try {
-    const _response = await getScoresForAllSignals();
-    console.log("response", _response);
-    res.json(_response);
+    //const _response = await getScoresForAllSignals();
+    console.log("response",data);
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,0 +1,64 @@
+
+{ "data" : [{
+    "signal101" : [
+      {
+        "subsignal1":[{
+          "ID": "subsignal1",
+          "weightage": 0.4
+        }] ,
+        "subsignal2": [{
+          "ID": "subsignal2",
+          "weightage": 0.2
+        }],
+        "subsignal3": [{
+          "ID": "subsignal2",
+          "weightage": 0.2
+        }],
+        "subsignal4": [{
+          "ID": "subsignal2",
+          "weightage": 0.2
+        }],
+        "location": "Dadar, Mumbai",
+        "signalCoordinates": [19.019221, 72.842255],
+        "roadCoordinates": [
+          [19.019221, 72.842255],
+          [19.019138, 72.843000],
+          [19.019079, 72.843366],
+          [19.019010, 72.843686],
+          [19.018979, 72.843903],
+          [19.018917, 72.844144]
+        ]
+      }
+    ],
+    "signal2": [
+      {
+        "subsignal1": [{
+          "ID": "subsignal5",
+          "weightage": 0.5
+        }],
+        "subsignal2": [{
+          "ID": "subsignal6",
+          "weightage": 0.2
+        }],
+        "subsignal3": [{
+          "ID": "subsignal7",
+          "weightage": 0.1
+        }],
+        "subsignal4": [{
+          "ID": "subsignal8",
+          "weightage": 0.1
+        }],
+        "location": "Dadar, Mumbai",
+        "signalCoordinates": [19.018917, 72.844144],
+        "roadCoordinates": [
+          [19.018917, 72.844144],
+          [19.018862, 72.844366],
+          [19.018831, 72.844593],
+          [19.018779, 72.844799],
+          [19.018719, 72.844964],
+          [19.018632, 72.845107]
+        ]
+      }
+    ]
+}]
+}
